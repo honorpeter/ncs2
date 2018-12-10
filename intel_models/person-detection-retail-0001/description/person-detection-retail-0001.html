@@ -1,0 +1,96 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title></title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+<link rel="stylesheet" href="../..//intel_styles.css" type="text/css" />
+</head>
+<body>
+<div id="banner">
+    <div id="bannerblock">
+      <img src="../..//intel_logo.png" class="intellogo">
+      <h1 class="title">Overview of OpenVINO&trade; toolkit Pre-trained Models</h1>
+    </div>
+  </div>
+<div id="contentblock">
+<h1 id="person-detection-retail-0001">person-detection-retail-0001</h1>
+<h2 id="use-case-and-high-level-description">Use case and High-level description</h2>
+<p>This model is for a pedestrian detector used for Retail scenarios. The model is based on a backbone with hyper-feature + R-FCN.</p>
+<h2 id="example">Example</h2>
+<div class="figure">
+<img src="./person-detection-retail-0001.png" />
+
+</div>
+<h2 id="specification">Specification</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Metric</th>
+<th align="left">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">AP</td>
+<td align="left">80.91%</td>
+</tr>
+<tr class="even">
+<td align="left">Pose coverage</td>
+<td align="left">Standing upright, parallel to image plane</td>
+</tr>
+<tr class="odd">
+<td align="left">Support of occluded pedestrians</td>
+<td align="left">YES</td>
+</tr>
+<tr class="even">
+<td align="left">Occlusion coverage</td>
+<td align="left">&lt;50%</td>
+</tr>
+<tr class="odd">
+<td align="left">Min pedestrian height</td>
+<td align="left">80 pixels (on 1080p)</td>
+</tr>
+<tr class="even">
+<td align="left">Max objects to detect</td>
+<td align="left">200</td>
+</tr>
+<tr class="odd">
+<td align="left">GFlops</td>
+<td align="left">12.422</td>
+</tr>
+<tr class="even">
+<td align="left">MParams</td>
+<td align="left">3.244</td>
+</tr>
+<tr class="odd">
+<td align="left">Source framework</td>
+<td align="left">Caffe</td>
+</tr>
+</tbody>
+</table>
+<p>Average Precision (AP) is defined as an area under the <a href="https://en.wikipedia.org/wiki/Precision_and_recall">precision/recall</a> curve. Validation dataset consists of about 50,000 images from about 100 scenes.</p>
+<h2 id="performance">Performance</h2>
+<p>Link to <a href="https://software.intel.com/en-us/openvino-toolkit/benchmarks">performance table</a></p>
+<h2 id="inputs">Inputs</h2>
+<ol style="list-style-type: decimal">
+<li><p>name: <code>data</code> , shape: [1x3x544x992] - An input image in the format [1xCxHxW]. The expected channel order is BGR.</p></li>
+<li><p>name: <code>im_info</code>, shape: [1x6] - Image information [544, 992, 992/<code>frame_width</code>, 544/<code>frame_height</code>, 992/<code>frame_width</code>, 544/<code>frame_height</code>]</p></li>
+</ol>
+<h2 id="outputs">Outputs</h2>
+<ol style="list-style-type: decimal">
+<li>name: <code>cls_prob_reshape</code>, shape: [200, 2] - Softmax output across two classes [Background, Pedestrian]</li>
+<li>name: <code>proposal</code>: shape: [200, 5] - Object proposals [0, x1, y1, x2, y2]</li>
+<li>name: <code>bbox_pred_reshape</code>, shape: [200, 8] - Bounding box deltas [d0, d1, d2, d3] for two classes [Background, Pedestrian]. The refined bounding box is [(cx + w * d0) - 0.5 * w * exp(d2), (cy + h * d1) - 0.5 * h * exp(d3), (cx + w * d0) + 0.5 * w * exp(d2), (cy + h * d1) + 0.5 * h * exp(d3)], where w = (x2 - x1 + 1), h = (y2 - y1 + 1), cx = (x1 + 0.5 * w), cy = (y1 + 0.5 * h).</li>
+</ol>
+<h2 id="legal-information">Legal Information</h2>
+<p>[*] Other names and brands may be claimed as the property of others.</p>
+</div>
+</body>
+</html>
