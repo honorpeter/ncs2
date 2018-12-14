@@ -44,11 +44,12 @@ def build_argparser():
                         type=str)
     parser.add_argument("--labels", help="Labels mapping file", default=None, type=str)
     parser.add_argument("-pt", "--prob_threshold", help="Probability threshold for detections filtering",
-                        default=0.5, type=float)
+                        #default=0.5, type=float)
+                        default=10, type=float)
     parser.add_argument("-iout", "--iou_threshold", help="Intersection over union threshold for overlapping detections"
                                                          " filtering", default=0.4, type=float)
     parser.add_argument("-ni", "--number_iter", help="Number of inference iterations", default=1, type=int)
-    parser.add_argument("-pc", "--perf_counts", help="Report performance counters", default=False, action="store_true")
+    parser.add_argument("-pc", "--perf_counts", help="Report performance counters", default=True, action="store_true")
     return parser
 
 
@@ -59,10 +60,10 @@ class YoloV3Params:
         self.classes = 6 if 'classes' not in param else int(param['classes'])
         self.anchors = [10.0, 13.0, 16.0, 30.0, 33.0, 23.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0] if 'anchors' not in param else [float(a) for a in param['anchors'].split(',')]
         self.side = side
-        if self.side == 13: self.anchor_offset = 2 * 3
-        elif self.side == 26: self.anchor_offset = 2 * 0
+        if self.side == 9: self.anchor_offset = 2 * 3
+        elif self.side == 18: self.anchor_offset = 2 * 0
         #elif self.side == 52: self.anchor_offset = 2 * 0
-        else: assert False, "Invalid output size. Only 13, 26 and 52 sizes are supported for output spatial dimensions"
+        #else: assert False, "Invalid output size. Only 13, 26 and 52 sizes are supported for output spatial dimensions"
 
     def log_params(self):
         params_to_print = {'classes': self.classes, 'num': self.num, 'coords': self.coords, 'anchors': self.anchors}
@@ -142,6 +143,13 @@ def main():
     # Read IR
     log.info("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
     net = IENetwork.from_ir(model=model_xml, weights=model_bin)
+    ###############################################################added by yyp
+
+    net.add_outputs(["layer2-maxpool","layer3-conv"])
+    #net.add_outputs(["layer3-conv"])
+    #print(net.outputs)
+
+    ###############################################################
 
     if plugin.device == "CPU":
         supported_layers = plugin.get_supported_layers(net)
@@ -160,8 +168,6 @@ def main():
     input_blob = next(iter(net.inputs))
     net.batch_size = len(args.input)
 
-    out_blob = next(iter(net.outputs))
-
     # Read and pre-process input images
     n, c, h, w = net.inputs[input_blob].shape
     input_images = np.ndarray(shape=(n, c, h, w))
@@ -174,7 +180,9 @@ def main():
             log.warning("Image {} is resized from {} to {}".format(args.input[i], image.shape[:-1], (h, w)))
             image = cv2.resize(image, (w, h))
             resized_images.append(image)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = image.transpose((2, 0, 1))  # Change data layout from HWC to CHW
+        image = image/255.0 ###################add yyp
         input_images[i] = image
         print('image:')
         print(image.shape)
@@ -196,16 +204,40 @@ def main():
     res = None
     for i in range(args.number_iter):
         t0 = time()
-        #res = exec_net.infer(inputs={input_blob: input_images})
-        print('before async infer start')
-        exec_net.start_async(0, inputs={input_blob: image})
-        print('after async infer start')
-        #if exec_net.requests[0].wait(-1) == 0:
+        res = exec_net.infer(inputs={input_blob: input_images})       
 
-            # Parse detection results of the current request
-        res = exec_net.requests[0].outputs[out_blob]
-        print(res)
-        print('infer done')
+        
+        print('layer3-conv:')
+        print(res['layer3-conv'].shape)
+        print(res['layer3-conv'][0])
+
+        print('layer2-maxpool:')
+        print(res['layer2-maxpool'].shape)
+        print(res['layer2-maxpool'][0])
+        '''
+        print('layer1-conv:')
+        print(res['layer1-conv'].shape)
+        print(res['layer1-conv'][0])
+        
+        
+        
+        print('layer10-maxpool:')
+        print(res['layer10-maxpool'].shape)
+        print(res['layer10-maxpool'][0])
+        
+        print('layer3-conv:')
+        print(res['layer3-conv'].shape)
+        print(res['layer3-conv'][0])
+               
+        print('layer16-conv:')
+        print(res['layer16-conv'].shape)
+        print(res['layer16-conv'][0])
+        print('layer23-conv:')
+        print(res['layer23-conv'].shape)
+        print(res['layer23-conv'][0])
+        '''
+        
+
         infer_time.append((time() - t0) * 1000)
     log.info("Average running time of one iteration: {} ms".format(np.average(np.asarray(infer_time))))
     if args.perf_counts:
@@ -220,9 +252,6 @@ def main():
     objects_by_batch = defaultdict(list)
 
     for layer_name, out_blob in res.items():
-            print(layer_name)
-            print(out_blob.shape)
-            print(out_blob)
             layer_params = YoloV3Params(net.layers[layer_name].params, out_blob.shape[2])
             print("Layer {} parameters: ".format(layer_name))
             layer_params.log_params()
