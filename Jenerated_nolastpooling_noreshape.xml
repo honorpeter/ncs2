@@ -740,7 +740,7 @@
 	<meta_data>
 		<MO_version value="1.4.292.6ef7232d"/>
 		<cli_parameters>
-			<data_type value="DIR"/>
+			<data_type value="FP16"/>
 			<disable_fusing value="False"/>
 			<disable_gfusing value="False"/>
 			<disable_nhwc_to_nchw value="False"/>

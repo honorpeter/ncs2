@@ -145,7 +145,7 @@ def main():
     net = IENetwork.from_ir(model=model_xml, weights=model_bin)
     ###############################################################added by yyp
 
-    net.add_outputs(["layer2-maxpool","layer3-conv"])
+    net.add_outputs(["layer16-conv","layer23-conv"])
     #net.add_outputs(["layer3-conv"])
     #print(net.outputs)
 
@@ -206,15 +206,24 @@ def main():
         t0 = time()
         res = exec_net.infer(inputs={input_blob: input_images})       
 
-        
+        '''
         print('layer3-conv:')
         print(res['layer3-conv'].shape)
         print(res['layer3-conv'][0])
+        '''
+        print('layer16-conv:')
+        print(res['layer16-conv'].shape)
+        print(res['layer16-conv'][0])
 
+        print('layer23-conv:')
+        print(res['layer23-conv'].shape)
+        print(res['layer23-conv'][0])
+  
+        '''
         print('layer2-maxpool:')
         print(res['layer2-maxpool'].shape)
         print(res['layer2-maxpool'][0])
-        '''
+        
         print('layer1-conv:')
         print(res['layer1-conv'].shape)
         print(res['layer1-conv'][0])
