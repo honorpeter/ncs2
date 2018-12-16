@@ -146,7 +146,7 @@ def main():
     ###############################################################added by yyp
 
     net.add_outputs(["layer16-conv","layer23-conv"])
-    #net.add_outputs(["layer3-conv"])
+    net.add_outputs(["layer3-conv"])
     #print(net.outputs)
 
     ###############################################################
@@ -206,11 +206,11 @@ def main():
         t0 = time()
         res = exec_net.infer(inputs={input_blob: input_images})       
 
-        '''
+        
         print('layer3-conv:')
         print(res['layer3-conv'].shape)
         print(res['layer3-conv'][0])
-        '''
+        
         print('layer16-conv:')
         print(res['layer16-conv'].shape)
         print(res['layer16-conv'][0])
